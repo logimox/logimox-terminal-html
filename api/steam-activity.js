@@ -31,9 +31,20 @@ export default async function handler(request, response) {
 
     const hours = text((recentSection.match(/(\d+(?:\.\d+)?) hrs? on record/) || [])[0]);
     const library = text((html.match(/[\d,]+ games owned/) || [])[0]);
+    const header = html.slice(html.indexOf('profile_header_content'), html.indexOf('profile_header_content') + 12000);
+    const avatar = (header.match(/class="playerAvatar[\s\S]*?<img[^>]+src="([^"]+)"/) || [])[1] || '';
+    const name = text((header.match(/actual_persona_name">([\s\S]*?)<\//) || [])[1]);
+    const level = text((header.match(/friendPlayerLevelNum">(\d+)/) || [])[1]);
+    const friends = text((html.match(/count_link_label">Friends[\s\S]*?profile_count_link_total">\s*([\d,]+)/) || [])[1]);
+    const recentHours = text((html.match(/recentgame_recentplaytime[\s\S]*?<div>([^<]+)<\//) || [])[1]);
+    const memberSince = text((html.match(/Member since ([^.<]+)\./) || [])[1]);
+    const status = /profile_in_game_header">Currently Online/.test(header) ? 'ONLINE' : 'OFFLINE';
 
     response.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=900');
-    response.status(200).json({ games, hours, library, updatedAt: new Date().toISOString() });
+    response.status(200).json({
+      games, hours, library, avatar, name, level, friends, recentHours, memberSince, status,
+      updatedAt: new Date().toISOString(),
+    });
   } catch (error) {
     response.status(502).json({ error: 'Steam activity is temporarily unavailable.' });
   }
