@@ -1,6 +1,26 @@
 const USERNAME = 'logimox';
 const API = 'https://api.github.com';
 
+async function getCodeSignal(repos, headers) {
+  const repo = repos.find((item) => item.name === 'logimox-terminal-html') || repos[0];
+  if (!repo) return [];
+  try {
+    const response = await fetch(`${API}/repos/${USERNAME}/${repo.name}/contents/index.html?ref=${repo.default_branch}`, { headers });
+    if (!response.ok) throw new Error('Code request failed');
+    const file = await response.json();
+    const text = Buffer.from(file.content || '', 'base64').toString('utf8');
+    return text
+      .replace(/\s+/g, ' ')
+      .split(/(?<=[;{}>])/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 12)
+      .flatMap((line) => line.match(/.{16,72}/g) || [])
+      .slice(0, 96);
+  } catch {
+    return [];
+  }
+}
+
 export default async function handler(request, response) {
   try {
     const headers = {
@@ -32,6 +52,7 @@ export default async function handler(request, response) {
       stars,
       forks,
       latest,
+      code: await getCodeSignal(repos, headers),
       updatedAt: new Date().toISOString(),
     });
   } catch (error) {
