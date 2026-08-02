@@ -1,0 +1,7 @@
+{
+  "name": "logimox-profile-concept",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "vercel dev", "deploy": "vercel --prod" },
+  "devDependencies": { "vercel": "latest" }
+}
