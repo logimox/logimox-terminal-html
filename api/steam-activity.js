@@ -22,7 +22,7 @@ export default async function handler(request, response) {
     const activityStart = html.indexOf('profile_recentgame');
     const recentSection = html.slice(activityStart, activityStart + 30000);
     const games = [...recentSection.matchAll(/<div class="recent_game">([\s\S]*?)<div style="clear: both;"><\/div>\s*<\/div>/g)]
-      .slice(0, 5)
+      .slice(0, 10)
       .map((match) => {
         const block = match[1];
         const appId = (block.match(/steamcommunity\.com\/app\/(\d+)/) || [])[1];
@@ -34,7 +34,7 @@ export default async function handler(request, response) {
       });
     if (!games.length) {
       games.push(...[...recentSection.matchAll(/<div class="game_name"><a[^>]+steamcommunity\.com\/app\/(\d+)[^>]*>([^<]+)<\/a>/g)]
-        .slice(0, 5).map((match) => ({ appId: match[1], name: decode(match[2]), capsule: '', details: '', achievements: '', url: `https://store.steampowered.com/app/${match[1]}/` })));
+        .slice(0, 10).map((match) => ({ appId: match[1], name: decode(match[2]), capsule: '', details: '', achievements: '', url: `https://store.steampowered.com/app/${match[1]}/` })));
     }
 
     const hours = text((recentSection.match(/(\d+(?:\.\d+)?) hrs? on record/) || [])[0]);
